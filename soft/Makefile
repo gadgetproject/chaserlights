@@ -26,6 +26,7 @@ RMDIR :=   $(SILENCE)rm -rf
 
 # List source files here...
 C_SRCS :=  \
+            blinky.c \
             task.c \
 # keep this comment to consume final backslash
 
@@ -57,8 +58,8 @@ rebuild: clean build
 
 # AVR8/GNU C Compiler
 ifeq ($(TARGET_MCU),attiny85)
-  # HF PLL locked to RC oscillator
-  CLOCK_FREQUENCY := 16000000
+  # Digispark default
+  CLOCK_FREQUENCY := 16500000
 endif
 
 $(OUTPUT_DIR)/%.o: %.c
@@ -67,7 +68,7 @@ $(OUTPUT_DIR)/%.o: %.c
           -x c -funsigned-char -funsigned-bitfields \
           -DTARGET_MCU=$(TARGET_MCU) -DF_CPU=$(CLOCK_FREQUENCY)UL \
           -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=$(TARGET_MCU) \
-          -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Os \
+          -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Os -g \
           -o "$@" "$<" 
 
 # Header dependencies
@@ -82,6 +83,7 @@ $(OUTPUT_FILE): $(OBJS)
 	@echo $@
 	$(CC) \
           -o$@ $^ \
+          -Wl,--script=linker.ld \
           -Wl,-Map=$(@:.elf=.map) -Wl,--gc-sections \
           -mmcu=$(TARGET_MCU)
 	$(OBJSIZE) $@
@@ -90,14 +92,8 @@ $(OUTPUT_FILE): $(OBJS)
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures $< $@
 
-%.eep: %.elf
-	$(OBJCOPY) -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex $< $@ || exit 0
-
-%.lss: %.elf
-	$(OBJDUMP) -h -S $< > $@
-
-%.srec: %.elf
-	$(OBJCOPY) -O srec -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures $< $@
+%.lst: %.elf
+	$(OBJDUMP) --disassemble --source --syms $< >$@
 
 # Utility
 flash: $(OUTPUT_FILE:.elf=.hex)

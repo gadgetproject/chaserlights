@@ -16,38 +16,19 @@
 
 #include "task.h"
 
-#include <util/delay.h>
-#define task_delay _delay_ms        /**< TODO: proper low-power sleep */
+#include <stdint.h>
+#include <avr/pgmspace.h>
 
-#define TASK_BLINKY
-
-#ifdef TASK_BLINKY
-#include <avr/io.h>
-
-static uint8_t task_test(uint8_t ms_later)
+/**
+ * @brief Sleep the processor for a short period
+ * @param milliseconds to sleep
+ */
+static void task_delay(uint8_t milliseconds)
 {
-    switch(ms_later)
-    {
-    case TASK_STARTUP:
-        DDRB |= 2;  /* PB1 */
-        break;
-    case TASK_SHUTDOWN:
-        DDRB &= ~2; /* PB1 */
-        break;
-    default:
-        PORTB ^= 2; /* PB1 */
-    }
-    
-    /* Minimum 2Hz blink but actually follows most wakeful task */
-    return 250;
+    /**< TODO: proper low-power sleep */
+    while(milliseconds--)
+        __builtin_avr_delay_cycles(F_CPU/1000);
 }
-#endif
-
-static const task_cycle tasks[] = {
-#ifdef TASK_BLINKY
-    task_test,
-#endif
-};
 
 /**
  * @brief Call task_cycle for each task, collating next wake times
@@ -58,18 +39,27 @@ static uint8_t task_cycle_all(uint8_t ms_later)
 {
     uint8_t all_wake = UINT8_MAX;
     
-    for (uint8_t i = 0; i < sizeof(tasks)/sizeof(*tasks); i++)
+    /* See TASK_DECLARE() which builds an array of task function pointers */
+    extern const task_cycle __task_list_start;
+    extern const task_cycle __task_list_end;
+    for (const task_cycle* pTask = &__task_list_start; pTask != &__task_list_end; pTask++)
     {
-        uint8_t task_wake = tasks[i](ms_later);
-        if (task_wake < all_wake)
-            all_wake = task_wake;
+        /* Array is stored in flash so we need to explicitly read */
+        task_cycle task = (task_cycle)pgm_read_word_near(pTask);
+        
+        /* Give the task a chance to run and tell us how long it can sleep for */
+        uint8_t wake = task(ms_later);
+        
+        /* Collate the soonest waking task */
+        if (wake < all_wake)
+            all_wake = wake;
     }
 
     return all_wake;
 }
 
 /**
- * @brief Round-robin scheduler calls each task cycle function in turn
+ * @brief Round-robin scheduler calls each task function in turn
  */
 int main(void)
 {

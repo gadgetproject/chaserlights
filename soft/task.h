@@ -14,7 +14,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 #define TASK_STARTUP ((uint8_t)255) /**< special value to initialise */
 #define TASK_SHUTDOWN ((uint8_t)0)  /**< special value to shutdown */
@@ -36,3 +36,13 @@
  */
 
 typedef uint8_t (*task_cycle)(uint8_t ms_later);
+
+/**
+ * @brief Preprocessor and Linker magic to insert task cycle pointer into global task list
+ * @param [in] task_cycle_ function pointer
+ * @note see linker.ld for usage of .task_list section
+ */
+#define TASK_DECLARE(task_cycle_) TASK_DECLARE2(task_cycle_, __LINE__) 
+#define TASK_DECLARE2(task_cycle_, line_) TASK_DECLARE3(task_cycle_, line_)
+#define TASK_DECLARE3(task_cycle_, line_) \
+static volatile const task_cycle task_cycle_##line_ __attribute__((section(".task_list"))) = task_cycle_
