@@ -42,7 +42,7 @@ typedef uint8_t (*task_cycle)(uint8_t ms_later);
  * @param [in] task_cycle_ function pointer
  * @note see linker.ld for usage of .task_list section
  */
-#define TASK_DECLARE(task_cycle_) TASK_DECLARE2(task_cycle_, __LINE__) 
+#define TASK_DECLARE(task_cycle_) TASK_DECLARE2(task_cycle_, __LINE__)
 #define TASK_DECLARE2(task_cycle_, line_) TASK_DECLARE3(task_cycle_, line_)
 #define TASK_DECLARE3(task_cycle_, line_) \
 static volatile const task_cycle task_cycle_##line_ __attribute__((section(".task_list"))) = task_cycle_

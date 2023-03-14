@@ -31,8 +31,9 @@ static uint8_t blinky_task(uint8_t ms_later)
         break;
     default:
         PORTB ^= 2; /* PB1 invert level */
+        break;
     }
-    
+
     /* Minimum 2Hz blink but actually follows most wakeful task */
     return 250;
 }
