@@ -1,6 +1,6 @@
-/*! \file blinky.c
+/*! \file pwm.h
  *
- *  \brief LED flashing task
+ *  \brief Pulse Width Modulation API
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -14,35 +14,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pwm.h"
-#include "task.h"
-
 #include <stdint.h>
 
-#define BLINKY_TICK 20
+/**
+ * @brief Set the duty factor of a PWM channel
+ * @param channel zero based
+ * @param duty in range 0..255 = OFF..ON
+ */
+void pwm_set(uint8_t channel, uint8_t duty);
 
-static uint8_t blinky_task(uint8_t ms_later)
-{
-    static uint8_t wait;
-
-    switch(ms_later)
-    {
-    case TASK_STARTUP:
-        wait = 0;
-        break;
-    case TASK_SHUTDOWN:
-        break;
-    default:
-        wait += ms_later;
-        if (wait < BLINKY_TICK)
-            break;
-        wait -= BLINKY_TICK;
-        /* Fade up, rollover at 255/5 = 51 ticks */
-        pwm_set(0, pwm_get(0)+5);
-        break;
-    }
-
-    return BLINKY_TICK-wait;
-}
-
-TASK_DECLARE(blinky_task);
+/**
+ * @brief Get the duty factor of a PWM channel
+ * @param channel zero based
+ * @return 0..255 = OFF..ON
+ */
+uint8_t pwm_get(uint8_t channel);

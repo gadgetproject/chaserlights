@@ -14,7 +14,7 @@
 ifeq ($(VERBOSE),)
   SILENCE := @
 else
-  SILENCE := 
+  SILENCE :=
 endif
 
 # On Debian/Ubuntu, sudo apt install gcc-avr avr-libc
@@ -27,6 +27,7 @@ RMDIR :=   $(SILENCE)rm -rf
 # List source files here...
 C_SRCS :=  \
             blinky.c \
+            pwm.c \
             task.c \
 # keep this comment to consume final backslash
 
@@ -69,7 +70,7 @@ $(OUTPUT_DIR)/%.o: %.c
           -DTARGET_MCU=$(TARGET_MCU) -DF_CPU=$(CLOCK_FREQUENCY)UL \
           -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=$(TARGET_MCU) \
           -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Os -g \
-          -o "$@" "$<" 
+          -o "$@" "$<"
 
 # Header dependencies
 ifneq ($(MAKECMDGOALS),clean)
