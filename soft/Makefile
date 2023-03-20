@@ -63,9 +63,9 @@ ifeq ($(TARGET_MCU),attiny85)
   CLOCK_FREQUENCY := 16500000
 endif
 
-$(OUTPUT_DIR)/%.o: %.c
+$(OUTPUT_DIR)/%.o: src/%.c
 	@echo $<
-	$(CC) \
+	$(CC) -iquote inc -iquote etc \
           -x c -funsigned-char -funsigned-bitfields \
           -DTARGET_MCU=$(TARGET_MCU) -DF_CPU=$(CLOCK_FREQUENCY)UL \
           -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=$(TARGET_MCU) \
@@ -84,7 +84,7 @@ $(OUTPUT_FILE): $(OBJS)
 	@echo $@
 	$(CC) \
           -o$@ $^ \
-          -Wl,--script=linker.ld \
+          -Wl,--script=etc/linker.ld \
           -Wl,-Map=$(@:.elf=.map) -Wl,--gc-sections \
           -mmcu=$(TARGET_MCU)
 	$(OBJSIZE) $@
