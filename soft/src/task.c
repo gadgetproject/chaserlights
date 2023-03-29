@@ -90,7 +90,7 @@ static uint8_t task_cycle_all(uint8_t ms_later)
 /**
  * @brief Round-robin scheduler calls each task function in turn
  */
-int main(void)
+void task_main(void)
 {
     /* Power management */
     set_sleep_mode(SLEEP_MODE_IDLE);
@@ -124,3 +124,10 @@ int main(void)
     cli();
     sleep_cpu();
 }
+
+#ifndef TEST
+int main(void)
+{
+    task_main();
+}
+#endif

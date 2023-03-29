@@ -1,6 +1,6 @@
-/*! \file task.h
+/*! \file sleep.h
  *
- *  \brief Scheduler API stub for unit testing
+ *  \brief AVR sleep stub
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -14,26 +14,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../inc/task.h"
+extern void mock_sleep_enable(void);
+#define sleep_enable mock_sleep_enable
 
-#undef TASK_DECLARE
-/**
- * @brief Override task declaration so we can unit tests tasks
- */
-#define TASK_DECLARE(task_cycle_) \
-const task_cycle task_cycle_##_fn = task_cycle_
+extern void mock_sleep_cpu(void);
+#define sleep_cpu mock_sleep_cpu
 
-/**
- * @brief Access the task function declared above
- */
-#define TASK_IMPORT(task_cycle_) extern const task_cycle task_cycle_##_fn
+enum sleep_mode
+{
+    SLEEP_MODE_IDLE = 0x123,
+    SLEEP_MODE_PWR_DOWN = 0x234,
+};
 
-/**
- * @brief Execute the task function defined above
- */
-#define TASK_CYCLE(task_cycle_) task_cycle_##_fn
+extern void mock_set_sleep_mode(enum sleep_mode);
+#define set_sleep_mode mock_set_sleep_mode
 
-/**
- * @brief Task loop
- */
-void task_main(void);
+
+extern unsigned char TCCR0A;
+extern unsigned char TCCR0B;
+extern unsigned char TCNT0;
+extern unsigned char OCR0A;
+extern unsigned char TIMSK;
+
+extern unsigned F_CPU;
