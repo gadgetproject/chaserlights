@@ -69,9 +69,9 @@ static uint8_t task_cycle_all(uint8_t ms_later)
     uint8_t all_wake = UINT8_MAX;
 
     /* See TASK_DECLARE() which builds an array of task function pointers */
-    extern const task_cycle __task_list_start;
-    extern const task_cycle __task_list_end;
-    for (const task_cycle* pTask = &__task_list_start; pTask != &__task_list_end; pTask++)
+    extern const task_cycle task_list_start asm("__task_list_start");
+    extern const task_cycle task_list_end asm("__task_list_end");
+    for (const task_cycle* pTask = &task_list_start; pTask != &task_list_end; pTask++)
     {
         /* Array is stored in flash so we need to explicitly read */
         task_cycle task = (task_cycle)pgm_read_word_near(pTask);

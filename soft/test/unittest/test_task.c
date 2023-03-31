@@ -46,7 +46,17 @@ static bool powered_down;
  */
 static task_cycle test_task[3];
 
-static uint8_t dummy_task(uint8_t later_ms)
+/* We use local functions in test_task[] which triggers a trampoline
+ * warning.
+ */
+#pragma GCC diagnostic ignored "-Wtrampolines"
+
+/**
+ * @brief Dummy task that immediately requests shutdown
+ * @param ignored
+ * @return TASK_SHUTDOWN
+ */
+static uint8_t dummy_task(uint8_t ignored)
 {
     return TASK_SHUTDOWN;
 }
