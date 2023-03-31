@@ -24,7 +24,7 @@
 # define PWM_CONFIG "pwm.config"
 #endif
 
-#define PWM_TICK_MILLISECONDS 16     /**< 67Hz cycle */
+#define PWM_CYCLE_MILLISECONDS 16     /**< 67Hz cycle */
 
 /* This is metaprogramming - more common in languages like C++ - where
  * a template causes specialised code to be generated as opposed to
@@ -63,46 +63,56 @@ static uint8_t pwm_task(uint8_t ms_later)
     switch(ms_later)
     {
     case TASK_STARTUP:
-        tick = 0;
+        tick = ~0;
         /* Enable outputs */
 #define PWM_GPIO_DDR_OUT(port_,pin_) DDR##port_ |= (1<<(pin_));
 PWM_GPIOS(PWM_GPIO_DDR_OUT)
 #undef PWM_GPIO_DDR_OUT
-        break;
+        return 1;
+
     case TASK_SHUTDOWN:
         /* Disable outputs */
 #define PWM_GPIO_DDR_HIZ(port_,pin_) DDR##port_ &= ~(1<<(pin_));
 PWM_GPIOS(PWM_GPIO_DDR_HIZ)
 #undef PWM_GPIO_DDR_HIZ
-        break;
+        return 1;
+
     default:
         {
-            /* Keep time */
+            /* Keep track of tick within cycle */
             tick += ms_later;
+            tick %= PWM_CYCLE_MILLISECONDS;
 
             /* Work out corresponding duty */
-#if (PWM_TICK_MILLISECONDS&(PWM_TICK_MILLISECONDS-1)) != 0
-# warning "For efficiency, PWM_TICK_MILLISECONDS ought to be a power of 2"
+#if (PWM_CYCLE_MILLISECONDS&(PWM_CYCLE_MILLISECONDS-1)) != 0
+# warning "For efficiency, PWM_CYCLE_MILLISECONDS ought to be a power of 2"
 #endif
             /* NOTE: looks complicated but gcc optimises to ROTATE and AND */
-            uint8_t duty = (256u*(uint16_t)(tick % (uint8_t)PWM_TICK_MILLISECONDS))
-                           /(uint8_t)PWM_TICK_MILLISECONDS;
+            uint8_t duty = (256u*(uint16_t)tick)
+                           /(uint8_t)PWM_CYCLE_MILLISECONDS;
 
             /* Switch GPIOs ON/OFF according to duty setting vs tick count */
             uint8_t channel = 0;
+            uint8_t next_duty = 255;
 #define PWM_GPIO_PORT_SWITCH(port_,pin_)                \
-            if (pwm_duty[channel++] > duty)             \
+            if (pwm_duty[channel] > duty)               \
+            {                                           \
                 PORT##port_ |= (1<<(pin_));   /* ON */  \
+                if (pwm_duty[channel] < next_duty)      \
+                    next_duty = pwm_duty[channel];      \
+            }                                           \
             else                                        \
-                PORT##port_ &= ~(1<<(pin_));  /* OFF */
+                PORT##port_ &= ~(1<<(pin_));  /* OFF */ \
+            channel++;
 PWM_GPIOS(PWM_GPIO_PORT_SWITCH)
 #undef PWM_GPIO_PORT_SWITCH
-        }
-        break;
-    }
 
-    /* Wake at 1kHz */
-    return 1;
+            /* Find out when the next transition will occur */
+            uint8_t next_tick = (PWM_CYCLE_MILLISECONDS*(uint16_t)(next_duty+1))
+                                /256u;
+            return (tick == next_tick) ? 1 : next_tick-tick;
+        }
+    }
 }
 
 TASK_DECLARE(pwm_task);

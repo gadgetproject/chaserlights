@@ -68,6 +68,11 @@ static void run_2s(uint8_t* channel0, uint8_t* channel1, uint8_t* channel2)
         sleep_ms = TASK_CYCLE(pwm_task)(sleep_ms);
         TEST_ASSERT_TRUE(sleep_ms != TASK_SHUTDOWN);
 
+        /* Tests are OFF, HALF, QUARTER, ON and should never need to run
+         * faster than 250Hz
+         */
+        TEST_ASSERT_TRUE(sleep_ms >= 4);
+
         /* Observe PWM duty - note channels are mapped (0,1,2)->(B,A,C) */
         if (PORTA == 1<<1)
             ch1_ms += sleep_ms;
