@@ -1,6 +1,6 @@
-/*! \file blinky.c
+/*! \file twinkle.h
  *
- *  \brief LED flashing task
+ *  \brief Coordinate the brightness of several LEDs
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -14,39 +14,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "task.h"
-#include "twinkle.h"
-
 #include <stdint.h>
 
-#define BLINKY_TICK 10
+/**
+ * @brief Set the position of the light source
+ * @param position in range 0..255
+ */
+void twinkle_set_position(uint8_t position);
 
-static uint8_t blinky_task(uint8_t ms_later)
-{
-    static uint8_t wait;
+/**
+ * @brief Get the position of the light source
+ * @return 0..255
+ */
+uint8_t twinkle_get_position(void);
 
-    switch(ms_later)
-    {
-    case TASK_STARTUP:
-        wait = 0;
-        /* Split position range into thirds: ON, OFF, FADE up/down */
-        twinkle_set_position(0);
-        twinkle_set_brightness(85);
-        break;
-    case TASK_SHUTDOWN:
-        twinkle_set_brightness(0);
-        break;
-    default:
-        wait += ms_later;
-        if (wait < BLINKY_TICK)
-            break;
-        wait -= BLINKY_TICK;
-        /* 256x10ms ~ 2.6s cycle */
-        twinkle_set_position(twinkle_get_position()+1);
-        break;
-    }
+/**
+ * @brief Set the brightness of the light source
+ * @param brightness in range 0..255
+ */
+void twinkle_set_brightness(uint8_t brightness);
 
-    return BLINKY_TICK-wait;
-}
-
-TASK_DECLARE(blinky_task);
+/**
+ * @brief Get the brightness of the light source
+ * @return 0..255
+ */
+uint8_t twinkle_get_brightness(void);

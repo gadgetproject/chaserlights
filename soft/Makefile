@@ -29,6 +29,7 @@ C_SRCS :=  \
             blinky.c \
             pwm.c \
             task.c \
+            twinkle.c \
 # keep this comment to consume final backslash
 
 # Where and what are we building?
