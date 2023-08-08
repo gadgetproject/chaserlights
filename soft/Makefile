@@ -17,6 +17,14 @@ else
   SILENCE :=
 endif
 
+# Where and what are we building?
+ifeq ($(APPLICATION),)
+  APPLICATION := sample/blinky
+endif
+ifeq ($(TARGET_MCU),)
+  TARGET_MCU := attiny85
+endif
+
 # On Debian/Ubuntu, sudo apt install gcc-avr avr-libc
 CC :=      $(SILENCE)avr-gcc
 OBJCOPY := $(SILENCE)avr-objcopy
@@ -25,24 +33,13 @@ OBJSIZE := $(SILENCE)avr-size
 RMDIR :=   $(SILENCE)rm -rf
 
 # List source files here...
-C_SRCS :=  \
-            blinky.c \
-            pwm.c \
-            task.c \
-            twinkle.c \
+C_SRCS :=  $(wildcard $(APPLICATION)/*.c) \
+           $(wildcard lib/*.c) \
 # keep this comment to consume final backslash
 
-# Where and what are we building?
-ifeq ($(TARGET_MCU),)
-  TARGET_MCU := attiny85
-endif
+# Derive .o and .d filenames from .c
 OUTPUT_DIR := build-$(TARGET_MCU)
 OUTPUT_FILE := $(OUTPUT_DIR)/chaserlights.elf
-
-# Create build directory if not already there
-$(shell mkdir $(OUTPUT_DIR) 2>/dev/null)
-
-# Derive .o and .d filenames from .c
 OBJS := $(C_SRCS:%.c=$(OUTPUT_DIR)/%.o)
 C_DEPS := $(C_SRCS:%.c=$(OUTPUT_DIR)/%.d)
 
@@ -54,7 +51,6 @@ all: $(OUTPUT_FILE:.elf=.hex) $(OUTPUT_FILE:.elf=.eep) $(OUTPUT_FILE:.elf=.lss) 
 
 clean:
 	-$(RMDIR) $(OUTPUT_DIR)
-	-mkdir $(OUTPUT_DIR)
 
 rebuild: clean build
 
@@ -64,9 +60,10 @@ ifeq ($(TARGET_MCU),attiny85)
   CLOCK_FREQUENCY := 16500000
 endif
 
-$(OUTPUT_DIR)/%.o: src/%.c
+$(OUTPUT_DIR)/%.o: %.c
 	@echo $<
-	$(CC) -iquote inc -iquote etc \
+	mkdir -p $(dir $@)
+	$(CC) -iquote inc -iquote $(APPLICATION) \
           -x c -funsigned-char -funsigned-bitfields \
           -DTARGET_MCU=$(TARGET_MCU) -DF_CPU=$(CLOCK_FREQUENCY)UL \
           -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=$(TARGET_MCU) \

@@ -33,7 +33,7 @@
   :test:
     - +:unittest/**
   :source:
-    - +:../src
+    - +:../lib
   :include:
     - +:stubs
     - +:../inc
