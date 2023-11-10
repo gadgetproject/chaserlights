@@ -24,6 +24,10 @@ endif
 ifeq ($(TARGET_MCU),)
   TARGET_MCU := attiny85
 endif
+ifeq ($(CLOCK_FREQUENCY),)
+  # Digispark default
+  CLOCK_FREQUENCY := 16500000
+endif
 
 # On Debian/Ubuntu, sudo apt install gcc-avr avr-libc
 CC :=      $(SILENCE)avr-gcc
@@ -55,10 +59,6 @@ clean:
 rebuild: clean build
 
 # AVR8/GNU C Compiler
-ifeq ($(TARGET_MCU),attiny85)
-  # Digispark default
-  CLOCK_FREQUENCY := 16500000
-endif
 
 $(OUTPUT_DIR)/%.o: %.c
 	@echo $<
