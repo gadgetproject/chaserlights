@@ -15,9 +15,8 @@
  */
 
 #include "pwm.h"
+#include "gpio.h"
 #include "task.h"
-
-#include <avr/io.h>
 
 /* Select configuration */
 #ifndef PWM_COMFIG
@@ -34,6 +33,8 @@
  * instructions and not many ports.
  */
 #include PWM_CONFIG
+
+#if defined(PWM_GPIOS)
 
 /**
  * Array of duty factors, initialised to the number of PWM GPIOs configured
@@ -65,16 +66,12 @@ static uint8_t pwm_task(uint8_t ms_later)
     case TASK_STARTUP:
         tick = ~0;
         /* Enable outputs */
-#define PWM_GPIO_DDR_OUT(port_,pin_) DDR##port_ |= (1<<(pin_));
-PWM_GPIOS(PWM_GPIO_DDR_OUT)
-#undef PWM_GPIO_DDR_OUT
+        PWM_GPIOS(GPIO_CONFIGURE_DIGITAL_OUTPUT);
         return 1;
 
     case TASK_SHUTDOWN:
         /* Disable outputs */
-#define PWM_GPIO_DDR_HIZ(port_,pin_) DDR##port_ &= ~(1<<(pin_));
-PWM_GPIOS(PWM_GPIO_DDR_HIZ)
-#undef PWM_GPIO_DDR_HIZ
+        PWM_GPIOS(GPIO_CONFIGURE_UNUSED);
         return 1;
 
     default:
@@ -97,12 +94,12 @@ PWM_GPIOS(PWM_GPIO_DDR_HIZ)
 #define PWM_GPIO_PORT_SWITCH(port_,pin_)                \
             if (pwm_duty[channel] > duty)               \
             {                                           \
-                PORT##port_ |= (1<<(pin_));   /* ON */  \
+                GPIO_OUTPUT_Vcc(port_, pin_); /* ON */  \
                 if (pwm_duty[channel] < next_duty)      \
                     next_duty = pwm_duty[channel];      \
             }                                           \
             else                                        \
-                PORT##port_ &= ~(1<<(pin_));  /* OFF */ \
+                GPIO_OUTPUT_GND(port_, pin_); /* OFF */ \
             channel++;
 PWM_GPIOS(PWM_GPIO_PORT_SWITCH)
 #undef PWM_GPIO_PORT_SWITCH
@@ -116,3 +113,5 @@ PWM_GPIOS(PWM_GPIO_PORT_SWITCH)
 }
 
 TASK_DECLARE(pwm_task);
+
+#endif /* defined(PWM_GPIOS) */

@@ -63,7 +63,7 @@ rebuild: clean build
 $(OUTPUT_DIR)/%.o: %.c
 	@echo $<
 	mkdir -p $(dir $@)
-	$(CC) -iquote inc -iquote $(APPLICATION) \
+	$(CC) -iquote inc -iquote $(APPLICATION) -iquote etc \
           -x c -funsigned-char -funsigned-bitfields \
           -DTARGET_MCU=$(TARGET_MCU) -DF_CPU=$(CLOCK_FREQUENCY)UL \
           -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=$(TARGET_MCU) \

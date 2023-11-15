@@ -31,6 +31,8 @@
  */
 #include TWINKLE_CONFIG
 
+#if defined(TWINKLE_PWMS)
+
 static uint8_t twinkle_position;    /**< current position of light source, wraps around 255-0 */
 static uint8_t twinkle_brightness;  /**< current brightness of light source: 0 = All OFF, 255 = All ON */
 
@@ -79,3 +81,5 @@ uint8_t twinkle_get_brightness(void)
 {
     return twinkle_brightness;
 }
+
+#endif /* defined(TWINKLE_PWMS) */

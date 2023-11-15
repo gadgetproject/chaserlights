@@ -16,6 +16,13 @@
 
 #include "task.h"
 
+#if !defined(TEST) && 0
+# include "../inc/gpio.h"
+# define CPU_PROFILE_GPIO(_) _(B,0) /**< Profile CPU activity on pin B0 */
+#else
+# define CPU_PROFILE_GPIO(_) /* do nothing */
+#endif
+
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
@@ -52,7 +59,9 @@ static void task_delay(uint8_t milliseconds)
 {
     while (task_ticks < milliseconds)
     {
+        CPU_PROFILE_GPIO(GPIO_OUTPUT_GND);
         sleep_cpu();
+        CPU_PROFILE_GPIO(GPIO_OUTPUT_Vcc);
     }
 
     /* Reset timer on exit so next delay is aligned to this time */
@@ -103,7 +112,7 @@ void task_main(void)
 
     /* Reset counter and set ~1ms compare */
     TCNT0 = 0;
-    OCR0A = (uint8_t)(TIMER_SYSCLK_256_2ms/2);
+    OCR0A = (uint8_t)(TIMER_SYSCLK_256_2ms/2)-1;
 
     /* Raise interrupt on Compare Match A */
     TIMSK = 0x10;   /* OCIE0A */
@@ -128,6 +137,10 @@ void task_main(void)
 #ifndef TEST
 int main(void)
 {
+    CPU_PROFILE_GPIO(GPIO_CONFIGURE_DIGITAL_OUTPUT);
+    CPU_PROFILE_GPIO(GPIO_OUTPUT_Vcc);
     task_main();
+    CPU_PROFILE_GPIO(GPIO_OUTPUT_GND);
+    CPU_PROFILE_GPIO(GPIO_CONFIGURE_UNUSED);
 }
 #endif
