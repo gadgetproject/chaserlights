@@ -33,7 +33,11 @@
 #define RANDOM_POLY1 0x4E   /**< x^14+x^11+x^10+x^9 */
 #define RANDOM_POLY0 0x63   /**< x^6+x^5+x^1+1 */
 
-#define STATIC static
+#ifdef TEST
+# define STATIC /* extern */
+#else
+# define STATIC static
+#endif
 
 /** @note LFSR must never be zero or it will get stuck there */
 STATIC uint8_t random_lfsr[4] = { 0, 0, 0, 0x80 };
@@ -100,6 +104,7 @@ uint8_t random_get(uint8_t maximum)
         for(mask = 0xFF; maximum <= (mask>>1); mask >>= 1);
     }
 
+#if 1
     /* Pump LFSR until a number in range is returned. On average this
      * should not take more than 2 iterations. */
     for(;;)
@@ -112,4 +117,9 @@ uint8_t random_get(uint8_t maximum)
             return value;
         }
     }
+#else
+    /* Test the unit test :-) */
+    random_pump();
+    return (uint8_t)(random_lfsr[0] % (1+(unsigned)maximum));
+#endif
 }
