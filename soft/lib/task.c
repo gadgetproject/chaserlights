@@ -107,15 +107,23 @@ void task_main(void)
     sleep_enable();
 
     /* We use TIMER0 with Counter A and /256 prescaler */
+#if TARGET_MCU == attiny88
+    TCCR0A = 0x04;  /* /256 */
+#else
     TCCR0A = 0x02;  /* OCRA */
     TCCR0B = 0x04;  /* /256 */
+#endif
 
     /* Reset counter and set ~1ms compare */
     TCNT0 = 0;
     OCR0A = (uint8_t)(TIMER_SYSCLK_256_2ms/2)-1;
 
     /* Raise interrupt on Compare Match A */
-    TIMSK = 0x10;   /* OCIE0A */
+#if TARGET_MCU == attiny88
+    TIMSK0 = 1<<OCIE0A;
+#else
+    TIMSK = 1<<OCIE0A;
+#endif
 
     /* Initialise and run */
     sei();
