@@ -26,8 +26,7 @@
  * a template causes specialised code to be generated as opposed to
  * data generated that is operated on by generic code.
  *
- * It's extremely efficient on a small processor with specialised I/O
- * instructions and not many ports.
+ * It's extremely efficient on a small processor with very little RAM.
  */
 #include TWINKLE_CONFIG
 
