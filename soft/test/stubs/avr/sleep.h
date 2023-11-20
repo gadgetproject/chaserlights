@@ -36,4 +36,6 @@ extern unsigned char TCNT0;
 extern unsigned char OCR0A;
 extern unsigned char TIMSK;
 
+#define OCIE0A 4
+
 extern unsigned F_CPU;
