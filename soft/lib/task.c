@@ -107,7 +107,7 @@ void task_main(void)
     sleep_enable();
 
     /* We use TIMER0 with Counter A and /256 prescaler */
-#if defined(__AVR_ATtiny48__) || defined(__AVR_ATtiny88__)
+#if TARGET_MCU_IS_attiny48 || TARGET_MCU_IS_attiny88
     TCCR0A = 0x04;  /* /256 */
 #else
     TCCR0A = 0x02;  /* OCRA */
@@ -119,7 +119,7 @@ void task_main(void)
     OCR0A = (uint8_t)(TIMER_SYSCLK_256_2ms/2)-1;
 
     /* Raise interrupt on Compare Match A */
-#if defined(__AVR_ATtiny48__) || defined(__AVR_ATtiny88__)
+#if TARGET_MCU_IS_attiny48 || TARGET_MCU_IS_attiny88
     TIMSK0 = 1<<OCIE0A;
 #else
     TIMSK = 1<<OCIE0A;
