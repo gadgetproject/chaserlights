@@ -65,7 +65,7 @@ $(OUTPUT_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) -iquote inc -iquote $(APPLICATION) -iquote etc \
           -x c -funsigned-char -funsigned-bitfields \
-          -DTARGET_MCU=$(TARGET_MCU) -DF_CPU=$(CLOCK_FREQUENCY)UL \
+          -DTARGET_MCU=$(TARGET_MCU) -DTARGET_MCU_IS_$(TARGET_MCU)=1 -DF_CPU=$(CLOCK_FREQUENCY)UL \
           -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=$(TARGET_MCU) \
           -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Os -g \
           -o "$@" "$<"
