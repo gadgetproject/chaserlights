@@ -49,6 +49,9 @@ static task_cycle test_task[3];
 /* We use local functions in test_task[] which triggers a trampoline
  * warning.
  */
+#ifndef __GNUC__
+# error "This test requires GCC extensions"
+#endif
 #pragma GCC diagnostic ignored "-Wtrampolines"
 
 /**

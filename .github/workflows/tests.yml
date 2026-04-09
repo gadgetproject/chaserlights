@@ -18,7 +18,8 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     container:
-      image: throwtheswitch/madsciencelab
+      image: throwtheswitch/madsciencelab:1.0.1
+      options: --user root
     steps:
       - uses: actions/checkout@v1
       - name: Unit test
